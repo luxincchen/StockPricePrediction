@@ -18,11 +18,13 @@ def main():
     for i in range(1, 6):
         test_path = f"data/test/test_{i}.csv"
         df = pd.read_csv(test_path)
-        
-        X_pred = df[["Open", "High", "Low", "Close", "Volume", "Adjusted"]].values
+
+        X_pred = df[["Open", "High", "Low", "Close", "Adjusted", "Volume"]].values
+        X_pred = X_pred[:-10] 
 
         Y_pred = predict(model, X_pred)
         predictions.append(Y_pred[:10].flatten())
+
 
 
     pred_matrix = list(zip(*predictions))
