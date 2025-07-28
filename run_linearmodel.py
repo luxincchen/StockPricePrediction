@@ -28,8 +28,7 @@ def main():
     pred_matrix = list(zip(*predictions))
 
      # Create submission DataFrame
-    dates = ["3/25/2025", "3/26/2025", "3/27/2025", "3/28/2025", "3/31/2025",
-        "4/1/2025", "4/2/2025", "4/3/2025", "4/4/2025", "4/7/2025"]
+    dates = ["3/24/2025", "3/25/2025", "3/26/2025", "3/27/2025", "3/28/2025", "3/31/2025", "4/1/2025", "4/2/2025", "4/3/2025", "4/4/2025"]
     submission_df = pd.DataFrame(pred_matrix, columns=["Returns_1", "Returns_2", "Returns_3", "Returns_4", "Returns_5"])
     submission_df.insert(0, "Date", dates)
 
