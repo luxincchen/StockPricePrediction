@@ -19,7 +19,6 @@ def main():
         test_path = f"data/test/test_{i}.csv"
         df = pd.read_csv(test_path)
         
-        # Use only the features your model was trained on
         X_pred = df[["Open", "High", "Low", "Close", "Volume", "Adjusted"]].values
 
         Y_pred = predict(model, X_pred)
