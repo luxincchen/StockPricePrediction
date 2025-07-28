@@ -25,8 +25,6 @@ def main():
         Y_pred = predict(model, X_pred)
         predictions.append(Y_pred[:10].flatten())
 
-
-
     pred_matrix = list(zip(*predictions))
 
      # Create submission DataFrame
