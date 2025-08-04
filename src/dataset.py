@@ -2,6 +2,7 @@ import pandas as pd
 import os 
 import numpy as np
 import torch
+from torch.utils.data import Dataset
 
 class LinearDataset:
     def __init__(self, dir='data/train/stocks/'):
@@ -49,10 +50,12 @@ class ARIMADataset:
         test_df = filter_df[int(len(filter_df) * 0.8):]
         return train_df, test_df
     
-class NNDataset:
-    def __init__(self, dir='data/train/stocks/', seq_len=10): #seq_len=10 is a hyperparameter that controls how many consecutive days of data are used on input and predicted as output
+class NNDataset(Dataset):
+    def __init__(self, dir='data/train/stocks/', seq_len=10):
         self.dir = dir
         self.seq_len = seq_len
+        self.X, self.Y = self.preprocess()
+
 
     def _load_data(self): # "_"means we only use this function inside the class --> static function 
         all_stocks = os.listdir(self.dir) #listdir gives the list of what is inside the dir 
@@ -64,25 +67,27 @@ class NNDataset:
     
     def preprocess(self):
         df = self._load_data()
+        print("Columns:", df.columns)  # See what's available
         features_df = df[["Open", "High", "Low", "Close", "Adjusted", "Volume"]]
         returns = df[["Returns"]].to_numpy()
 
-        X = features_df.to_numpy() #converts pandas dataframe into a numpy array 
-        
+        X = features_df.to_numpy()
         X_windows = []
         Y_windows = []
 
-        for i in range (len(X) - 2 * self.seq_len):
+        for i in range(len(X) - 2 * self.seq_len):
             X_window = X[i:i + self.seq_len]
-            Y_window = returns[i + self.seq_len:i + 2 * self.seq_len].flatten
-        
+            Y_window = returns[i + self.seq_len:i + 2 * self.seq_len].flatten()
             X_windows.append(X_window)
             Y_windows.append(Y_window)
 
         return np.array(X_windows), np.array(Y_windows)
+
     
     def __len__(self):
         return len(self.X)
 
-    def __getitem__(self, idx): #what the hell is this
-        return torch.tensor(self.X[idx], dtype=torch.float32), torch.tensor(self.Y[idx], dtype=torch.float32)
+    def __getitem__(self, idx):
+        x = torch.tensor(self.X[idx], dtype=torch.float32)
+        y = torch.tensor(self.Y[idx], dtype=torch.float32).flatten()  
+        return x, y
