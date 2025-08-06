@@ -50,12 +50,12 @@ class ARIMADataset:
         test_df = filter_df[int(len(filter_df) * 0.8):]
         return train_df, test_df
     
+    
 class NNDataset(Dataset):
     def __init__(self, dir='data/train/stocks/', seq_len=10):
         self.dir = dir
         self.seq_len = seq_len
         self.X, self.Y = self.preprocess()
-
 
     def _load_data(self): # "_"means we only use this function inside the class --> static function 
         all_stocks = os.listdir(self.dir) #listdir gives the list of what is inside the dir 
@@ -67,22 +67,23 @@ class NNDataset(Dataset):
     
     def preprocess(self):
         df = self._load_data()
-        print("Columns:", df.columns)  # See what's available
-        features_df = df[["Open", "High", "Low", "Close", "Adjusted", "Volume"]]
-        returns = df[["Returns"]].to_numpy()
+        features = df[["Open", "High", "Low", "Close", "Adjusted", "Volume"]].values.tolist()
+        returns = df[["Returns"]].values.tolist()
+        features, returns = features[self.seq_len:], returns[:-self.seq_len]
 
-        X = features_df.to_numpy()
-        X_windows = []
-        Y_windows = []
-
-        for i in range(len(X) - 2 * self.seq_len):
-            X_window = X[i:i + self.seq_len]
-            Y_window = returns[i + self.seq_len:i + 2 * self.seq_len].flatten()
-            X_windows.append(X_window)
-            Y_windows.append(Y_window)
-
-        return np.array(X_windows), np.array(Y_windows)
-
+        X, y = [], []
+        model_input = []
+        model_target = []
+        for i, (feature_lst, target) in enumerate(zip(features, returns)):
+            model_input += feature_lst   
+            model_target += [target]
+            if (i + 1) % self.seq_len == 0:
+                X.append(model_input)
+                y.append(model_target)
+                model_input = []
+                model_target = []
+            
+        return torch.tensor(X), torch.tensor(y)
     
     def __len__(self):
         return len(self.X)
