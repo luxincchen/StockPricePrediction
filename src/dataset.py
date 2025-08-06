@@ -69,7 +69,7 @@ class NNDataset(Dataset):
         df = self._load_data()
         features = df[["Open", "High", "Low", "Close", "Adjusted", "Volume"]].values.tolist()
         returns = df[["Returns"]].values.tolist()
-        features, returns = features[self.seq_len:], returns[:-self.seq_len]
+        features, returns = features[:self.seq_len], returns[-self.seq_len:]
 
         X, y = [], []
         model_input = []
