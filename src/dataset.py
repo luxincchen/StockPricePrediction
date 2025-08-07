@@ -22,8 +22,9 @@ class LinearDataset:
 
         X = filter_df.to_numpy()
         Y = df[["Returns"]].to_numpy()
+        dates = df[["Date"]].to_numpy()
 
-        return X[:-10], Y[10:]
+        return X[:-10], Y[10:], dates[10:]
 
     def split(self, X, Y):
         X_test = X[int(len(X) * 0.8):]
