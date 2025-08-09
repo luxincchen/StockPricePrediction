@@ -3,7 +3,7 @@ import os
 import numpy as np
 import torch
 from torch.utils.data import Dataset
-
+from src.features import beta_features
 class LinearDataset:
     def __init__(self, dir='data/train/stocks/'):
         self.dir = dir
@@ -17,9 +17,11 @@ class LinearDataset:
         return pd.concat(all_dfs)
 
     def preprocess(self):
-        df = self._load_data()
-        filter_df = df[["Open", "High", "Low", "Close", "Adjusted", "Volume"]]
+        df = beta_features(stocks_dir=self.dir, sp500_path='data/train/indices/SP500.csv', window=60)
+        df = df.dropna(subset=["beta_lag1"])
 
+        filter_df = df[["Open", "High", "Low", "Close", "Adjusted", "Volume", "beta_lag1"]]
+        
         X = filter_df.to_numpy()
         Y = df[["Returns"]].to_numpy()
         

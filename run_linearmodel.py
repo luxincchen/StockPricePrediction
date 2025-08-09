@@ -1,11 +1,12 @@
 import pandas as pd 
 from src.linear_model import train, test, predict
-from src.dataset import LinearDataset
+from src.new_dataset import LinearDataset
+from src.features import beta_features
 
 #Train the model 
 def main():
+    
     dataset = LinearDataset("data/train/stocks/")
-
     X, Y = dataset.preprocess()
     X_test, X_train, Y_test, Y_train = dataset.split(X, Y)
 
@@ -18,8 +19,9 @@ def main():
     for i in range(1, 6):
         test_path = f"data/test/test_{i}.csv"
         df = pd.read_csv(test_path)
+        df = beta_features(stocks_dir=test_path, sp500_path="data/train/indices/SP500.csv")
 
-        X_pred = df[["Open", "High", "Low", "Close", "Adjusted", "Volume"]].values
+        X_pred = df[["Open", "High", "Low", "Close", "Adjusted", "Volume", "beta_lag1"]].values
         X_pred = X_pred[:-10] 
 
         Y_pred = predict(model, X_pred)
