@@ -2,29 +2,35 @@ import os
 import pandas as pd
 
 def beta_features(stocks_dir='data/train/stocks/', sp500_path='data/train/indices/SP500.csv', window=60):
+    #Load stock data
+    if os.path.isdir(stocks_dir):
+        stocks_lst = []
+        for stock in sorted(os.listdir(stocks_dir)): 
+            file_path = os.path.join(stocks_dir, stock)
+            df = pd.read_csv(file_path)
+            stocks_lst.append(df)
+        stocks_df = pd.concat(stocks_lst)
+    else:
+        stocks_df = pd.read_csv(stocks_dir)
 
-    stocks_lst = []
+        if "Ticker" not in stocks_df.columns:
+            stocks_df["Ticker"] = os.path.splitext(os.path.basename(stocks_dir))[0]
 
-    for stock in sorted(os.listdir(stocks_dir)): 
-        file_path = os.path.join(stocks_dir, stock)
-        df = pd.read_csv(file_path)
-        stocks_lst.append(df)
 
-    stocks_df = pd.concat(stocks_lst)
-
+    #Load S&P500
     sp500_df = pd.read_csv('data/train/indices/SP500.csv')
     sp500_df = sp500_df.rename(columns={'Returns': 'sp500_return'})
     sp500_df = sp500_df[['Date', 'sp500_return']]
 
     merged_df = pd.merge(stocks_df, sp500_df, on='Date')
-    merged_df = merged_df.sort_values(by=['Date', 'Ticker'])
+    merged_df = merged_df.sort_values(['Ticker','Date'])
 
-    def rolling_beta(group, window=60):
-        cov = group['Returns'].rolling(window).cov(group['sp500_return'])
-        var = group['sp500_return'].rolling(window).var()
-        return cov / var
+    g = merged_df.groupby('Ticker')
 
-    merged_df['rolling_beta'] = merged_df.groupby('Ticker', group_keys=False).apply(rolling_beta)
-    merged_df['beta_lag1'] = merged_df.groupby('Ticker')['rolling_beta'].shift(1)
+    cov = g['Returns'].rolling(window).cov(g['sp500_return']).reset_index(level=0, drop=True)
+    var = g['sp500_return'].rolling(window).var().reset_index(level=0, drop=True)
+
+    merged_df['rolling_beta'] = cov / var
+    merged_df['beta_lag1']    = g['rolling_beta'].shift(1).reset_index(level=0, drop=True)
 
     return merged_df 
