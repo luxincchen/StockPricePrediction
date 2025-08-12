@@ -2,35 +2,37 @@ import os
 import pandas as pd
 
 def beta_features(stocks_dir='data/train/stocks/', sp500_path='data/train/indices/SP500.csv', window=60):
-    #Load stock data
+    # Load stock data (folder or single file)
     if os.path.isdir(stocks_dir):
         stocks_lst = []
-        for stock in sorted(os.listdir(stocks_dir)): 
+        for stock in sorted(os.listdir(stocks_dir)):
             file_path = os.path.join(stocks_dir, stock)
             df = pd.read_csv(file_path)
             stocks_lst.append(df)
-        stocks_df = pd.concat(stocks_lst)
+        stocks_df = pd.concat(stocks_lst, ignore_index=True)
     else:
         stocks_df = pd.read_csv(stocks_dir)
 
-        if "Ticker" not in stocks_df.columns:
-            stocks_df["Ticker"] = os.path.splitext(os.path.basename(stocks_dir))[0]
+    # Ensure Ticker exists for single-file case
+    if "Ticker" not in stocks_df.columns:
+        stocks_df["Ticker"] = os.path.splitext(os.path.basename(stocks_dir))[0]
 
+    # Load S&P500 (use the provided path)
+    sp500_df = pd.read_csv(sp500_path).rename(columns={'Returns': 'sp500_return'})[['Date', 'sp500_return']]
 
-    #Load S&P500
-    sp500_df = pd.read_csv('data/train/indices/SP500.csv')
-    sp500_df = sp500_df.rename(columns={'Returns': 'sp500_return'})
-    sp500_df = sp500_df[['Date', 'sp500_return']]
+    # Merge and sort
+    merged_df = pd.merge(stocks_df, sp500_df, on='Date', how='inner')
+    merged_df = merged_df.sort_values(['Ticker', 'Date'], kind='stable')
 
-    merged_df = pd.merge(stocks_df, sp500_df, on='Date')
-    merged_df = merged_df.sort_values(['Ticker','Date'])
+    # Group by ticker; group_keys=False keeps the original index (no MultiIndex to drop)
+    g = merged_df.groupby('Ticker', group_keys=False, sort=False)
 
-    g = merged_df.groupby('Ticker')
+    # Rolling cov/var per ticker
+    cov = g.apply(lambda d: d['Returns'].rolling(window).cov(d['sp500_return']))
+    var = g.apply(lambda d: d['sp500_return'].rolling(window).var())
 
-    cov = g['Returns'].rolling(window).cov(g['sp500_return']).reset_index(level=0, drop=True)
-    var = g['sp500_return'].rolling(window).var().reset_index(level=0, drop=True)
+    # Compute beta and its lag
+    merged_df['beta'] = cov / var
+    merged_df['beta_lag1'] = g['beta'].shift(1)
 
-    merged_df['rolling_beta'] = cov / var
-    merged_df['beta_lag1']    = g['rolling_beta'].shift(1).reset_index(level=0, drop=True)
-
-    return merged_df 
+    return merged_df
