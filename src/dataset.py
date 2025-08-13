@@ -89,6 +89,6 @@ class NNDataset(Dataset):
         return len(self.X)
 
     def __getitem__(self, idx):
-        x = torch.tensor(self.X[idx], dtype=torch.float32)
-        y = torch.tensor(self.Y[idx], dtype=torch.float32).flatten()  
-        return x, y
+        x = self.X[idx].reshape(self.seq_len, -1)  # shape: (10, 6)
+        y = self.Y[idx].flatten()                  # shape: (10,)
+        return torch.tensor(x, dtype=torch.float32), torch.tensor(y, dtype=torch.float32)
