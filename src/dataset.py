@@ -3,6 +3,7 @@ import os
 import numpy as np
 import torch
 from torch.utils.data import Dataset
+from sklearn.preprocessing import StandardScaler
 
 class LinearDataset:
     def __init__(self, dir='data/train/stocks/'):
@@ -50,45 +51,43 @@ class ARIMADataset:
         test_df = filter_df[int(len(filter_df) * 0.8):]
         return train_df, test_df
     
-    
 class NNDataset(Dataset):
     def __init__(self, dir='data/train/stocks/', seq_len=10):
         self.dir = dir
         self.seq_len = seq_len
         self.X, self.Y = self.preprocess()
 
-    def _load_data(self): # "_"means we only use this function inside the class --> static function 
-        all_stocks = os.listdir(self.dir) #listdir gives the list of what is inside the dir 
-        all_dfs = []
+    def _load_data(self):
+        all_stocks = os.listdir(self.dir)
+        dfs = []
         for stock in all_stocks:
-            all_dfs.append(pd.read_csv(self.dir + stock))
+            df = pd.read_csv(os.path.join(self.dir, stock))
+            dfs.append(df)
+        return pd.concat(dfs)
 
-        return pd.concat(all_dfs)
-    
     def preprocess(self):
         df = self._load_data()
-        features = df[["Open", "High", "Low", "Close", "Adjusted", "Volume"]].values.tolist()
-        returns = df[["Returns"]].values.tolist()
-        features, returns = features[-self.seq_len:], returns[:self.seq_len]
+        features = df[["Open", "High", "Low", "Close", "Adjusted", "Volume"]].values
+        returns = df["Returns"].values
 
-        X, y = [], []
-        model_input = []
-        model_target = []
-        for i, (feature_lst, target) in enumerate(zip(features, returns)):
-            model_input += feature_lst   
-            model_target += [target]
-            if (i + 1) % self.seq_len == 0:
-                X.append(model_input)
-                y.append(model_target)
-                model_input = []
-                model_target = []
-            
-        return torch.tensor(X), torch.tensor(y)
-    
+        # 🔧 Normalize inputs (per feature)
+        features = (features - features.mean(axis=0)) / features.std(axis=0)
+        scaler = StandardScaler()
+        X = scaler.fit_transform(features)
+
+        X_windows = []
+        Y_windows = []
+
+        for i in range(len(features) - 2 * self.seq_len):
+            X = features[i:i + self.seq_len]
+            y = returns[i + self.seq_len : i + 2 * self.seq_len]
+            X_windows.append(X)
+            Y_windows.append(y)
+
+        return torch.tensor(np.array(X_windows), dtype=torch.float32), torch.tensor(np.array(Y_windows), dtype=torch.float32)
+
     def __len__(self):
         return len(self.X)
 
     def __getitem__(self, idx):
-        x = self.X[idx].reshape(self.seq_len, -1)  # shape: (10, 6)
-        y = self.Y[idx].flatten()                  # shape: (10,)
-        return torch.tensor(x, dtype=torch.float32), torch.tensor(y, dtype=torch.float32)
+        return self.X[idx], self.Y[idx]

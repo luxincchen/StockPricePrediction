@@ -17,7 +17,7 @@ class StockNN(nn.Module):
     def forward(self, x):
         return self.model(x)
 
-def train_model(model, train_loader, epochs=10, learning_rate=0.001):
+def train_model(model, train_loader, epochs=10, learning_rate=0.0001):
     # an epoch is one full pass through the entire training dataset
     loss_fn = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
@@ -33,3 +33,4 @@ def train_model(model, train_loader, epochs=10, learning_rate=0.001):
             loss.backward() #backpropagation step - calculates the gradient of the loss wrt every parameter in the model (weights & biases)
             optimizer.step() #updates the model weights using the gradients
             total_loss += loss.item()
+    return model 
