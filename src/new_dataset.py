@@ -54,30 +54,43 @@ class ARIMADataset:
     
     
 class NNDataset(Dataset):
-    def __init__(self, dir='data/train/stocks/', seq_len=10):
+    def __init__(self, dir='data/train/stocks/', seq_len=10, train=True, split=0.8):
         self.dir = dir
         self.seq_len = seq_len
+        self.train = train
+        self.split = split
         self.X, self.Y = self.preprocess()
 
-    def _load_data(self): # "_"means we only use this function inside the class --> static function 
-        all_stocks = os.listdir(self.dir) #listdir gives the list of what is inside the dir 
+        # --- split into train/test here ---
+        split_idx = int(len(self.X) * self.split)
+        if self.train:
+            self.X = self.X[:split_idx]
+            self.Y = self.Y[:split_idx]
+        else:
+            self.X = self.X[split_idx:]
+            self.Y = self.Y[split_idx:]
+
+    def _load_data(self):
+        all_stocks = os.listdir(self.dir)
         all_dfs = []
         for stock in all_stocks:
             all_dfs.append(pd.read_csv(self.dir + stock))
-
         return pd.concat(all_dfs)
     
     def preprocess(self):
-        df = self._load_data()
-        features = df[["Open", "High", "Low", "Close", "Adjusted", "Volume"]].values.tolist()
+        df = beta_features(stocks_dir=self.dir, sp500_path='data/train/indices/SP500.csv', window=60)
+        df = df.dropna(subset=["beta_lag1"])
+        features = df[["Open", "High", "Low", "Close", "Adjusted", "Volume", "beta_lag1"]].values.tolist()
         returns = df[["Returns"]].values.tolist()
-        features, returns = features[-self.seq_len:], returns[:self.seq_len]
+
+        # ⚠️ check alignment: your old code took last features and first returns, which mismatches
+        features, returns = features[:len(returns)], returns[:len(features)]
 
         X, y = [], []
         model_input = []
         model_target = []
         for i, (feature_lst, target) in enumerate(zip(features, returns)):
-            model_input += feature_lst   
+            model_input += feature_lst
             model_target += [target]
             if (i + 1) % self.seq_len == 0:
                 X.append(model_input)

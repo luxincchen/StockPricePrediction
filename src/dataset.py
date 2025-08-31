@@ -70,17 +70,15 @@ class NNDataset(Dataset):
         features = df[["Open", "High", "Low", "Close", "Adjusted", "Volume"]].values
         returns = df["Returns"].values
 
-        # 🔧 Normalize inputs (per feature)
+        # normalize features
         features = (features - features.mean(axis=0)) / features.std(axis=0)
-        scaler = StandardScaler()
-        X = scaler.fit_transform(features)
 
-        X_windows = []
-        Y_windows = []
+        X_windows, Y_windows = [], []
+        horizon = 10
 
-        for i in range(len(features) - 2 * self.seq_len):
-            X = features[i:i + self.seq_len]
-            y = returns[i + self.seq_len : i + 2 * self.seq_len]
+        for i in range(len(features) - self.seq_len - horizon):
+            X = features[i : i + self.seq_len]
+            y = returns[i + self.seq_len : i + self.seq_len + horizon]  # always 10
             X_windows.append(X)
             Y_windows.append(y)
 

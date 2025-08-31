@@ -1,0 +1,8 @@
+{
+  "epochs": 15,
+  "learning_rate": 0.001,
+  "seq_len": 50,
+  "hidden1": 128,
+  "hidden2": 128,
+  "test_loss": 3.487698755616896e-06
+}
