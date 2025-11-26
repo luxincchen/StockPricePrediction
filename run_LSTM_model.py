@@ -22,18 +22,14 @@ def main():
     train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
-    # -----------------------------
-    # 2. Initialize model
-    # -----------------------------
+    # Initialize model
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = LSTMModel().to(device)
 
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-    # -----------------------------
     # 3. Training loop
-    # -----------------------------
     EPOCHS = 20
     for epoch in range(EPOCHS):
         model.train()
@@ -52,9 +48,8 @@ def main():
         avg_loss = total_loss / len(train_loader)
         print(f"Epoch {epoch+1}/{EPOCHS}, Loss: {avg_loss:.4f}")
 
-       # -----------------------------
-    # 4. Forecast for each test file
-    # -----------------------------
+     
+    # Forecast for each test file
     predictions = []
 
     for i in range(1, 6):  # 5 test files
@@ -76,25 +71,20 @@ def main():
 
         predictions.append(forecast)
 
-    # -----------------------------
-    # 5. Create submission DataFrame
-    # -----------------------------
-    dates = [
-        "2025-03-25", "2025-03-26", "2025-03-27", "2025-03-28", "2025-03-31",
-        "2025-04-01", "2025-04-02", "2025-04-03", "2025-04-04", "2025-04-07"
-    ]
+ 
+    # Create submission DataFrame
+  
+    dates = ["2025-03-25", "2025-03-26", "2025-03-27", "2025-03-28", "2025-03-31",
+        "2025-04-01", "2025-04-02", "2025-04-03", "2025-04-04", "2025-04-07"]
 
     # Transpose: rows = dates, cols = test files
     pred_matrix = list(zip(*predictions))
 
-    submission_df = pd.DataFrame(
-        pred_matrix,
-        columns=["Returns_1", "Returns_2", "Returns_3", "Returns_4", "Returns_5"]
-    )
+    submission_df = pd.DataFrame(pred_matrix, columns=["Returns_1", "Returns_2", "Returns_3", "Returns_4", "Returns_5"])
     submission_df.insert(0, "Date", dates)
 
-    # Save CSV
     submission_df.to_csv("submission_LSTM.csv", index=False)
-    print("📁 Saved submission_LSTM.csv")
+    print("Saved submission_LSTM.csv")
+    
 if __name__ == "__main__":
     main()
