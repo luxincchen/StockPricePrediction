@@ -50,6 +50,7 @@ It contains daily price and volume data for S&P 500 stocks from 2015-01-05 to 20
 
 ## Repository Structure
 Main directory
+
 ├── README.md
 
 ├── requirements.txt            # Project dependencies
@@ -77,6 +78,7 @@ Main directory
 ├── test.ipynb                  # Notebook for testing
 
 src/folder
+
 ├── __init__.py
 
 ├── __pycache__/
