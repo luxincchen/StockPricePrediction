@@ -13,11 +13,11 @@ The repository includes:
 
 ## Methods Used
 1. Linear Regression
-   - Serve as a baseline model using lagged features 
+- Serve as a baseline model using lagged features 
 2. ARIMA Model
-  - ARIMA achieved the lowest MSE in this project.
+- ARIMA achieved the lowest MSE in this project.
 3. Neural Network
-  - A simple feedforward network was implemented. Performance was weaker than ARIMA. 
+- A simple feedforward network was implemented. Performance was weaker than ARIMA. 
 
 
 ## Feature Engineering 
