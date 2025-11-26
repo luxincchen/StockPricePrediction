@@ -6,8 +6,8 @@ Predicting future stock prices using historical market data
 This project explores different modeling approaches to **predict stock returns** for the next 10 trading days as part of the Kaggle **Stock Price Prediction Challenge** (hosted by Nikita Manaenkov). This project is done in collaboration with Maarten Drinhuyzen. 
 
 The repository includes:
-- Data preprocessing & feature engineering
-- Feature engineering experiments 
+- Data preprocessing
+- Feature engineering
 - Multiple predictive models
 
 
