@@ -51,33 +51,53 @@ It contains daily price and volume data for S&P 500 stocks from 2015-01-05 to 20
 ## Repository Structure
 Main directory
 ├── README.md
+
 ├── requirements.txt            # Project dependencies
+
 ├── run_arimamodel.py           # Script to train ARIMA model + generate predictions
+
 ├── run_linearmodel.py          # Script to train linear regression model + generate predictions
+
 ├── run_NNmodel.py              # Script to train neural network model + generate predictions
+
 ├── loss_curve.png              # Neural network training loss plot
+
 ├── loss_comparison.png         # MSE comparison plot
+
 ├── best_hyperparams.json       # Saved hyperparameters for NN
+
 ├── submission.csv              # Linear regression model Kaggle submission
+
 ├── submission_NN.csv           # NN Kaggle submission
+
 ├── submission_NN_best.csv      # NN with tuned parameters Kaggle submission
+
 ├── submission_arima.csv        # ARIMA Kaggle submission
+
 ├── test.ipynb                  # Notebook for testing
 
 src/folder
 ├── __init__.py
+
 ├── __pycache__/
+
 ├── .DS_Store
-│
+
+
 ├── NN_model.py            # Neural network architecture & training utilities
+
 ├── arima_model.py         # ARIMA model implementation
+
 ├── linear_model.py        # Linear regression implementation
-│
+
 ├── dataset.py             # Data loading & preparation
+
 ├── new_dataset.py         # Dataset with features 
-│
+
 ├── features.py            # Feature engineering (beta, momentum, etc.)
+
 ├── metrics.py             # MSE function 
+
 └── create_submission.py   # Outputs Kaggle-formatted submission file
 
 
@@ -100,11 +120,11 @@ src/folder
 - Place the CSV files in your working directory
 - Paths may be adjusted in src/dataset.py and/pr src/new_dataset.py
 4. Run models
-  ```
-  python run_linearmode.py
-  python run_arimamodel.py
-  python run_NNmodel.py
-  ```
+    ```
+    python run_linearmode.py
+    python run_arimamodel.py
+    python run_NNmodel.py
+    ```
 - Each script trains the model and generates a submission file
 ## Evaluation
 Model performance is evaluated using mean squared error (MSE), consistent with the Kaggle competition's evaluation metric. 
