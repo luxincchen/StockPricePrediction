@@ -3,7 +3,7 @@ import os
 import numpy as np
 import torch
 from torch.utils.data import Dataset
-from src.features import beta_features
+from src.features import beta_features, mom_features
 class LinearDataset:
     def __init__(self, dir='data/train/stocks/'):
         self.dir = dir
@@ -17,10 +17,24 @@ class LinearDataset:
         return pd.concat(all_dfs)
 
     def preprocess(self):
-        df = beta_features(stocks_dir=self.dir, sp500_path='data/train/indices/SP500.csv', window=60)
-        df = df.dropna(subset=["beta_lag1"])
+        df_beta = beta_features(stocks_dir=self.dir, sp500_path='data/train/indices/SP500.csv', window=60)
+        df_beta = df_beta.dropna(subset=["beta_lag1"])
 
-        filter_df = df[["Open", "High", "Low", "Close", "Adjusted", "Volume", "beta_lag1"]]
+        df_mom = mom_features(stocks_dir=self.dir, sp500_path='data/train/indices/SP500.csv')
+
+        df = pd.merge(
+            df_beta,
+            df_mom[["Ticker","Date","mom_10","mom_20","mom_10_lag1","mom_20_lag1","MA_7","MA_50"]],
+            on=["Ticker","Date"],
+            how="left"
+        )
+
+        filter_df = df[[
+                    "Open", "High", "Low", "Close", "Adjusted", "Volume", 
+                    "beta_lag1", "mom_10_lag1", "mom_20_lag1", "MA_7", "MA_50"
+                ]]
+
+        filter_df = filter_df.dropna()
         
         X = filter_df.to_numpy()
         Y = df[["Returns"]].to_numpy()
@@ -61,7 +75,7 @@ class NNDataset(Dataset):
         self.split = split
         self.X, self.Y = self.preprocess()
 
-        # --- split into train/test here ---
+        # split into train/test
         split_idx = int(len(self.X) * self.split)
         if self.train:
             self.X = self.X[:split_idx]
@@ -83,7 +97,7 @@ class NNDataset(Dataset):
         features = df[["Open", "High", "Low", "Close", "Adjusted", "Volume", "beta_lag1"]].values.tolist()
         returns = df[["Returns"]].values.tolist()
 
-        # ⚠️ check alignment: your old code took last features and first returns, which mismatches
+        # check alignment: your old code took last features and first returns, which mismatches
         features, returns = features[:len(returns)], returns[:len(features)]
 
         X, y = [], []

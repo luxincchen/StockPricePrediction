@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 
 class LinearDataset:
     def __init__(self, dir='data/train/stocks/'):
@@ -89,3 +90,46 @@ class NNDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.X[idx], self.Y[idx]
+
+class LSTMDataset(Dataset):
+    def __init__(self, dir='data/train/stocks/', seq_len=50, horizon=10):
+        self.dir = dir
+        self.seq_len = seq_len
+        self.horizon = horizon
+        self.X, self.Y = self.preprocess()
+
+    def _load_data(self):
+        all_stocks = os.listdir(self.dir)
+        dfs = []
+        for stock in all_stocks:
+            df = pd.read_csv(os.path.join(self.dir, stock))
+            dfs.append(df)
+        return pd.concat(dfs)
+
+    def preprocess(self):
+        df = self._load_data()
+        features = df[['Open','High','Low','Close','Adjusted','Volume','Returns']]
+
+        # Scale features
+        self.scaler = MinMaxScaler(feature_range=(0,1))
+        scaled = self.scaler.fit_transform(features)
+
+        # Create sequences
+        X, Y = self.create_seq(scaled, self.seq_len, self.horizon)
+        return X, Y
+
+    def create_seq(self, data, window_size, horizon):
+        x, y = [], []
+        for i in range(len(data) - window_size - horizon):
+            row = data[i:i+window_size, :-1]   # use first 6 cols as input (features)
+            x.append(row)
+
+            label = data[i+window_size : i+window_size+horizon, -1]  # returns column
+            y.append(label)
+        return np.array(x), np.array(y)
+
+    def __len__(self):
+        return len(self.X)
+
+    def __getitem__(self, idx):
+        return torch.tensor(self.X[idx], dtype=torch.float32), torch.tensor(self.Y[idx], dtype=torch.float32)

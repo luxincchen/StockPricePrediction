@@ -3,4 +3,3 @@ import src.arima_model as arima
 
 def create_submission_csv(model_class):
     model_class.train
-

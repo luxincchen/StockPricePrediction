@@ -16,9 +16,8 @@ def main():
     n_features = 6   # Open, High, Low, Close, Adjusted, Volume
     horizon = 10
 
-    # =========================
     # Hyperparameter search space
-    # =========================
+    
     seq_len_values   = [10, 20, 50]        # lookback window
     hidden1_values   = [64, 128]           # first hidden layer size
     hidden2_values   = [128, 256]          # second hidden layer size
@@ -36,9 +35,9 @@ def main():
         "state_dict": None,
     }
 
-    # =========================
+   
     # Grid search
-    # =========================
+    
     for seq_len in seq_len_values:
         train_dataset = NNDataset(seq_len=seq_len)
         n = len(train_dataset)
@@ -91,7 +90,7 @@ def main():
             "test_loss": best["test_loss"]
         }, f, indent=2)
 
-    print(f"✅ Best combo: seq_len={best['seq_len']}, h1={best['hidden1']}, h2={best['hidden2']}, "
+    print(f"Best combo: seq_len={best['seq_len']}, h1={best['hidden1']}, h2={best['hidden2']}, "
           f"epochs={best['epochs']}, lr={best['lr']}, "
           f"test_loss={best['test_loss']:.6f} (saved to best_hyperparams.json)")
 
@@ -101,9 +100,8 @@ def main():
     best_model.load_state_dict(best["state_dict"])
     best_model.eval()
 
-    # =========================
     # Scaler fit ONLY on training features (no leakage)
-    # =========================
+    
     train_df = pd.concat([
         pd.read_csv(os.path.join("data/train/stocks", f))
         for f in os.listdir("data/train/stocks/")
@@ -113,9 +111,9 @@ def main():
     train_features = train_df[["Open", "High", "Low", "Close", "Adjusted", "Volume"]].to_numpy()
     scaler = StandardScaler().fit(train_features)
 
-    # =========================
+    
     # Inference: use last seq_len rows of each test file
-    # =========================
+   
     predictions = []
     seq_len = best["seq_len"]
 
@@ -141,17 +139,12 @@ def main():
 
     # transpose: rows = days, cols = test_i
     pred_matrix = list(zip(*predictions))
-    dates = [
-        "2025-03-25", "2025-03-26", "2025-03-27", "2025-03-28", "2025-03-31",
-        "2025-04-01", "2025-04-02", "2025-04-03", "2025-04-04", "2025-04-07"
-    ]
-    submission_df = pd.DataFrame(
-        pred_matrix,
-        columns=["Returns_1", "Returns_2", "Returns_3", "Returns_4", "Returns_5"]
-    )
+    dates = ["2025-03-25", "2025-03-26", "2025-03-27", "2025-03-28", "2025-03-31",
+        "2025-04-01", "2025-04-02", "2025-04-03", "2025-04-04", "2025-04-07"]
+    submission_df = pd.DataFrame(pred_matrix, columns=["Returns_1", "Returns_2", "Returns_3", "Returns_4", "Returns_5"])
     submission_df.insert(0, "Date", dates)
     submission_df.to_csv("submission_NN_best.csv", index=False)
-    print("📁 Saved submission_NN_best.csv")
+    print("Saved submission_NN_best.csv")
 
 if __name__ == "__main__":
     main()

@@ -24,18 +24,22 @@ def beta_features(stocks_dir='data/train/stocks/', sp500_path='data/train/indice
     merged_df = pd.merge(stocks_df, sp500_df, on='Date', how='inner')
     merged_df = merged_df.sort_values(['Ticker', 'Date'], kind='stable')
 
-    # Group by ticker; group_keys=False keeps the original index (no MultiIndex to drop)
+    # Group by ticker
     g = merged_df.groupby('Ticker', group_keys=False, sort=False)
 
-    # Rolling cov/var per ticker
-    cov = g.apply(lambda d: d['Returns'].rolling(window).cov(d['sp500_return']))
-    var = g.apply(lambda d: d['sp500_return'].rolling(window).var())
+    # Rolling covariance and variance (using transform to avoid FutureWarning + misalignment)
+    merged_df['cov'] = g.apply(lambda d: d['Returns'].rolling(window).cov(d['sp500_return'])).reset_index(level=0, drop=True)
+    merged_df['var'] = g['sp500_return'].transform(lambda x: x.rolling(window).var())
 
     # Compute beta and its lag
-    merged_df['beta'] = cov / var
+    merged_df['beta'] = merged_df['cov'] / merged_df['var']
     merged_df['beta_lag1'] = g['beta'].shift(1)
 
+    # Drop helper cols
+    merged_df = merged_df.drop(columns=['cov', 'var'])
+
     return merged_df
+
 
 def mom_features(stocks_dir='data/train/stocks/', sp500_path='data/train/indices/SP500.csv'):
     # Load stock data (folder or single file)
@@ -73,5 +77,11 @@ def mom_features(stocks_dir='data/train/stocks/', sp500_path='data/train/indices
     for c in ['mom_10', 'mom_20']:
         if c in merged_df.columns:
             merged_df[c + '_lag1'] = g[c].shift(1)
+    
+    merged_df['MA_7'] = g[price].transform(lambda x: x.rolling(window=7).mean())
+    merged_df['MA_50'] = g[price].transform(lambda x: x.rolling(window=50).mean())
+    merged_df['MA_7_lag1'] = g['MA_7'].shift(1)
+    merged_df['MA_50_lag1'] = g['MA_50'].shift(1)
+
 
     return merged_df
