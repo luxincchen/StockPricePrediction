@@ -1,5 +1,5 @@
 # Stock Price Prediction Project
-Predicting future stock prices using historical market data 
+Predicting future stock prices using historical market data.
 
 
 ## Overview
