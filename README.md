@@ -1,14 +1,16 @@
 # Stock Price Prediction Project
 Predicting future stock prices using historical market data 
 
----
+
 ## Overview
-This project explores different modeling approaches to **predict stock returns** for the next 10 trading days as part of the Kaggle **Stock Price Prediction Challenge** (hosted by Nikita Manaenkov).
+This project explores different modeling approaches to **predict stock returns** for the next 10 trading days as part of the Kaggle **Stock Price Prediction Challenge** (hosted by Nikita Manaenkov). This project is done in collaboration with Maarten Drinhuyzen. 
+
+The repository includes:
 - Data preprocessing & feature engineering
 - Feature engineering experiments 
 - Multiple predictive models
 
----
+
 ## Methods Used
 1. Linear Regression
    - Serve as a baseline model using lagged features 
@@ -17,7 +19,7 @@ This project explores different modeling approaches to **predict stock returns**
 3. Neural Network
   - A simple feedforward network was implemented. Performance was weaker than ARIMA. 
 
----
+
 ## Feature Engineering 
 Beta and momentum were derived from the datasets and added as additional predictors. 
 Both features yielded worse model performance in this project, increasing MSE across all models.
