@@ -84,8 +84,8 @@ It contains daily S&P 500 historical price data including:
 1. Clone the repository
 
 ```
-git clone https://github.com/luxincchen/<your-repo-name>.git
-cd <your-repo-name>
+git clone https://github.com/luxincchen/StockPricePrediction.git
+cd StockPricePrediction
 ```
 
 2. Install dependencies
