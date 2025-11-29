@@ -69,7 +69,7 @@ It contains daily S&P 500 historical price data including:
 │   ├── submission_NN_best.csv
 │   └── best_hyperparams.json
 └── src/
-    ├── main.py
+    ├── run.py
     ├── linear_model.py
     ├── arima_model.py
     ├── NN_model.py
@@ -108,9 +108,9 @@ Place the CSVs inside the `data/` directory. Paths may be adjusted in `src/datas
 4. Run models
 
 ```
-python -m src.main --model linear
-python -m src.main --model arima
-python -m src.main --model nn
+python -m src.run --model linear
+python -m src.run --model arima
+python -m src.run --model nn
 ```
 
 Or run all sequentially:
