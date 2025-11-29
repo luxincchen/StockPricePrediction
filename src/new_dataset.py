@@ -4,6 +4,8 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 from src.features import beta_features, mom_features
+
+
 class LinearDataset:
     def __init__(self, dir='data/train/stocks/'):
         self.dir = dir
