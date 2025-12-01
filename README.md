@@ -17,13 +17,13 @@ The workflow includes:
 ## Methods Used
 
 1. Linear Regression
-   Served as a baseline model using lagged features.
+   - Served as a baseline model using lagged features.
 
 2. ARIMA Model
-   Achieved the lowest MSE in this project, capturing autocorrelated patterns in returns.
+   - Achieved the lowest MSE in this project, capturing autocorrelated patterns in returns.
 
 3. Neural Network
-   A simple feed-forward network was implemented. Performance was weaker than ARIMA.
+   - A simple feed-forward network was implemented. Performance was weaker than ARIMA.
 
 ## Feature Engineering
 
